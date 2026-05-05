@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
+import '../../services/api_service.dart';
 import 'agent_result.dart';
 
 
@@ -38,6 +39,41 @@ class _AgentRoomScreenState extends State<AgentRoomScreen> {
     "Deep Think",
   ];
 
+  bool canGenerate() {
+    return controller.text.trim().length > 10;
+  }
+
+  String buildAgentPrompt() {
+    return """
+🧠 INTELLIGENCE BRIEF
+
+🧭 Intent:
+$selectedIntent
+
+⚙️ Thinking Mode:
+$selectedMode
+
+💭 User Thought:
+${controller.text}
+
+📌 Task:
+Act as a high-level decision intelligence system.
+Break this problem into structured insights:
+
+1. Situation Analysis
+2. Hidden Risks / Blind Spots
+3. Strategic Options
+4. Best Recommended Action
+5. Long-term Outcome Prediction
+6. Final Clear Guidance (simple human explanation)
+
+⚠️ Tone:
+- Be direct but supportive
+- No fluff
+- Prioritize clarity over complexity
+""";
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,6 +101,7 @@ class _AgentRoomScreenState extends State<AgentRoomScreen> {
 
                 /// ================= INPUT FOCUS BLOCK =================
                 _inputBlock(),
+                _promptPreviewCard(),
 
                 const SizedBox(height: 18),
 
@@ -545,7 +582,18 @@ class _AgentRoomScreenState extends State<AgentRoomScreen> {
       right: 18,
       bottom: 20,
       child: GestureDetector(
-        onTap: () => _showProcessing(context, widget.agentImage),
+        // onTap: () => _showProcessing(context, widget.agentImage),
+        onTap: canGenerate()
+            ? () {
+          final prompt = buildAgentPrompt();
+          _showProcessing(context, widget.agentImage, prompt);
+        }
+            : null,
+        // onTap: () {
+        //   final prompt = buildAgentPrompt();
+        //
+        //   _showProcessing(context, widget.agentImage, prompt);
+        // },
         child: Container(
           height: 58,
           decoration: BoxDecoration(
@@ -568,137 +616,214 @@ class _AgentRoomScreenState extends State<AgentRoomScreen> {
     );
   }
 
-  void _showProcessing(BuildContext context, String agentImage) {
+  // void _showProcessing(BuildContext context, String agentImage, String prompt) {
+  //   showGeneralDialog(
+  //     context: context,
+  //     barrierDismissible: false,
+  //     barrierColor: Colors.black.withOpacity(0.6),
+  //     pageBuilder: (_, __, ___) {
+  //       return Material(
+  //         color: Colors.transparent,
+  //         child: Stack(
+  //           children: [
+  //             BackdropFilter(
+  //               filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+  //               child: Container(
+  //                 color: Colors.black.withOpacity(0.35),
+  //               ),
+  //             ),
+  //
+  //             Center(
+  //               child: Column(
+  //                 mainAxisSize: MainAxisSize.min,
+  //                 children: [
+  //
+  //                   Stack(
+  //                     alignment: Alignment.center,
+  //                     children: [
+  //
+  //                       TweenAnimationBuilder<double>(
+  //                         tween: Tween(begin: 0.8, end: 1.4),
+  //                         duration: const Duration(milliseconds: 1200),
+  //                         curve: Curves.easeInOut,
+  //                         builder: (_, value, child) {
+  //                           return Container(
+  //                             width: 140 * value,
+  //                             height: 140 * value,
+  //                             decoration: BoxDecoration(
+  //                               shape: BoxShape.circle,
+  //                               border: Border.all(
+  //                                 color: Colors.white.withOpacity(0.15),
+  //                                 width: 2,
+  //                               ),
+  //                             ),
+  //                           );
+  //                         },
+  //                       ),
+  //
+  //                       TweenAnimationBuilder<double>(
+  //                         tween: Tween(begin: 0.9, end: 1.6),
+  //                         duration: const Duration(milliseconds: 1500),
+  //                         curve: Curves.easeInOut,
+  //                         builder: (_, value, child) {
+  //                           return Container(
+  //                             width: 120 * value,
+  //                             height: 120 * value,
+  //                             decoration: BoxDecoration(
+  //                               shape: BoxShape.circle,
+  //                               border: Border.all(
+  //                                 color: Colors.white.withOpacity(0.08),
+  //                                 width: 2,
+  //                               ),
+  //                             ),
+  //                           );
+  //                         },
+  //                       ),
+  //
+  //                       CircleAvatar(
+  //                         radius: 45,
+  //                         backgroundImage: AssetImage(agentImage),
+  //                       ),
+  //                     ],
+  //                   ),
+  //
+  //                   const SizedBox(height: 20),
+  //
+  //                   const Text(
+  //                     "Agent Sandra",
+  //                     style: TextStyle(
+  //                       fontSize: 20,
+  //                       fontWeight: FontWeight.w700,
+  //                       color: Colors.white,
+  //                     ),
+  //                   ),
+  //
+  //                   const SizedBox(height: 6),
+  //
+  //                   const Text(
+  //                     "Constructing your AI space",
+  //                     style: TextStyle(
+  //                       fontSize: 13,
+  //                       color: Colors.white70,
+  //                     ),
+  //                   ),
+  //
+  //                   const SizedBox(height: 20),
+  //
+  //                   const _DotWaveLoader(),
+  //
+  //                   const SizedBox(height: 18),
+  //
+  //                   const Text(
+  //                     'Your agent is working on your request....',
+  //                     textAlign: TextAlign.center,
+  //                     style: TextStyle(
+  //                       fontSize: 14,
+  //                       color: Colors.white,
+  //                       fontWeight: FontWeight.w500,
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  //
+  //   Future.delayed(const Duration(seconds: 2), () {
+  //     Navigator.pop(context); // close loader first
+  //
+  //     Navigator.push(
+  //       context,
+  //       MaterialPageRoute(
+  //         builder: (context) => AgentAdviceResultScreen(
+  //           prompt: prompt, // 🔥 structured intelligence prompt
+  //           intent: selectedIntent,
+  //           mode: selectedMode,
+  //           agentImage: widget.agentImage,
+  //         ),
+  //       ),
+  //     );
+  //   });
+  // }
+  void _showProcessing(BuildContext context, String agentImage, String prompt) async {
     showGeneralDialog(
       context: context,
       barrierDismissible: false,
       barrierColor: Colors.black.withOpacity(0.6),
       pageBuilder: (_, __, ___) {
-        return Material(
-          color: Colors.transparent,
-          child: Stack(
-            children: [
-              BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                child: Container(
-                  color: Colors.black.withOpacity(0.35),
-                ),
-              ),
-
-              Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-
-                        TweenAnimationBuilder<double>(
-                          tween: Tween(begin: 0.8, end: 1.4),
-                          duration: const Duration(milliseconds: 1200),
-                          curve: Curves.easeInOut,
-                          builder: (_, value, child) {
-                            return Container(
-                              width: 140 * value,
-                              height: 140 * value,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.15),
-                                  width: 2,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-
-                        TweenAnimationBuilder<double>(
-                          tween: Tween(begin: 0.9, end: 1.6),
-                          duration: const Duration(milliseconds: 1500),
-                          curve: Curves.easeInOut,
-                          builder: (_, value, child) {
-                            return Container(
-                              width: 120 * value,
-                              height: 120 * value,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.08),
-                                  width: 2,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-
-                        CircleAvatar(
-                          radius: 45,
-                          backgroundImage: AssetImage(agentImage),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    const Text(
-                      "Agent Sandra",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-
-                    const SizedBox(height: 6),
-
-                    const Text(
-                      "Constructing your AI space",
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.white70,
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    const _DotWaveLoader(),
-
-                    const SizedBox(height: 18),
-
-                    const Text(
-                      'Your agent is working on your request....',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
+        return const Center(child: CircularProgressIndicator());
       },
     );
 
-    Future.delayed(const Duration(seconds: 2), () {
-      Navigator.pop(context); // close loader first
+    try {
+      final service = OpenAIService();
+
+      final response = await service.sendMessage(prompt);
+
+      Navigator.pop(context); // close loader
 
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => AgentAdviceResultScreen(
-            prompt: controller.text,
+            prompt: response, // 👈 IMPORTANT: pass AI response
             intent: selectedIntent,
             mode: selectedMode,
             agentImage: widget.agentImage,
           ),
         ),
       );
-    });
+    } catch (e) {
+      Navigator.pop(context);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    }
+  }
+
+  Widget _promptPreviewCard() {
+    return Container(
+      margin: const EdgeInsets.only(top: 18),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+
+          Text(
+            "AI Understanding Preview",
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+
+          SizedBox(height: 10),
+
+          Text(
+            "Your input will be transformed into a structured intelligence brief:\n\n"
+                "• Situation breakdown\n"
+                "• Risk analysis\n"
+                "• Strategic options\n"
+                "• Best action plan\n"
+                "• Final decision guidance",
+            style: TextStyle(
+              color: Colors.white70,
+              height: 1.5,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
 }

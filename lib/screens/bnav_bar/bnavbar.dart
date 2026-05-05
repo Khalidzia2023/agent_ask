@@ -1,7 +1,9 @@
 import 'package:agent_ask/screens/agents_view/agents_view.dart';
 import 'package:flutter/material.dart';
 
+import '../app_featrues/chat_view/ai_chat_view.dart';
 import '../setting_screen/settings_view.dart';
+import '../features_view/features_view.dart';
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
@@ -14,9 +16,11 @@ class _BottomNavBarState extends State<BottomNavBar> {
   int index = 0;
 
   final pages = const [
-    HomeScreen(),
-    SettingsScreen(),
     AgentsView(),
+    AiFeatureHub(),
+    // FavoritesScreen(),
+    ChatView(),
+    SettingsScreen(),
   ];
 
   @override
@@ -29,7 +33,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
       bottomNavigationBar: Container(
         margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: Colors.black,
           borderRadius: BorderRadius.circular(40),
@@ -46,8 +50,9 @@ class _BottomNavBarState extends State<BottomNavBar> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             navItem(Icons.support_agent_rounded, 0),
-            navItem(Icons.explore_rounded, 1),
-            navItem(Icons.person_rounded, 2),
+            navItem(Icons.grid_view_rounded, 1),
+            navItem(Icons.favorite_rounded, 2),
+            navItem(Icons.settings_rounded, 3),
           ],
         ),
       ),
@@ -89,8 +94,6 @@ class _BottomNavBarState extends State<BottomNavBar> {
       ),
     );
   }
-
-
 }
 
 /* -------------------- SCREENS -------------------- */
@@ -132,4 +135,3 @@ class ExploreScreen extends StatelessWidget {
     );
   }
 }
-
